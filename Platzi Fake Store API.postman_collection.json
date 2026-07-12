@@ -28,8 +28,12 @@
             {
               "listen": "prerequest",
               "script": {
-                "exec": [],
-                "type": "text/javascript"
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -37,9 +41,12 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{Base_URL}}/api/v1/users",
+              "raw": "https://api.escuelajs.co/api/v1/users",
+              "protocol": "https",
               "host": [
-                "{{Base_URL}}"
+                "api",
+                "escuelajs",
+                "co"
               ],
               "path": [
                 "api",
@@ -96,9 +103,12 @@
               }
             },
             "url": {
-              "raw": "{{Base_URL}}/api/v1/auth/login",
+              "raw": "https://api.escuelajs.co/api/v1/auth/login",
+              "protocol": "https",
               "host": [
-                "{{Base_URL}}"
+                "api",
+                "escuelajs",
+                "co"
               ],
               "path": [
                 "api",
@@ -129,8 +139,12 @@
             {
               "listen": "prerequest",
               "script": {
-                "exec": [],
-                "type": "text/javascript"
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -138,9 +152,12 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{Base_URL}}/api/v1/users/1",
+              "raw": "https://api.escuelajs.co/api/v1/users/1",
+              "protocol": "https",
               "host": [
-                "{{Base_URL}}"
+                "api",
+                "escuelajs",
+                "co"
               ],
               "path": [
                 "api",
@@ -193,9 +210,12 @@
               }
             },
             "url": {
-              "raw": "{{Base_URL}}/api/v1/users/is-available",
+              "raw": "https://api.escuelajs.co/api/v1/users/is-available",
+              "protocol": "https",
               "host": [
-                "{{Base_URL}}"
+                "api",
+                "escuelajs",
+                "co"
               ],
               "path": [
                 "api",
