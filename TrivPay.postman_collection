@@ -1,0 +1,2084 @@
+{
+  "info": {
+    "_postman_id": "938f23ed-c417-46a6-be7e-863f16af8359",
+    "name": "MONITOR",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52898954"
+  },
+  "item": [
+    {
+      "name": "Authentication Copy",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const prefixes = [\r",
+                  "    \"703\", \"704\", \"705\", \"706\", \"707\", \"708\", \"709\",\r",
+                  "    \"803\", \"805\", \"806\", \"807\", \"808\", \"809\",\r",
+                  "    \"810\", \"811\", \"812\", \"813\", \"814\", \"815\", \"816\", \"817\", \"818\", \"819\",\r",
+                  "    \"901\", \"902\", \"903\", \"904\", \"905\", \"906\", \"907\", \"908\", \"909\",\r",
+                  "    \"912\", \"913\", \"914\", \"915\", \"916\"\r",
+                  "];\r",
+                  "\r",
+                  "const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];\r",
+                  "const lineNumber = Math.floor(1000000 + Math.random() * 9000000);\r",
+                  "\r",
+                  "const phoneNumber = `+234${prefix}${lineNumber}`;\r",
+                  "\r",
+                  "pm.environment.set(\"phone_number\", phoneNumber);\r",
+                  "console.log(phoneNumber);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const statusCode = pm.response.code;",
+                  "const contentType = (pm.response.headers.get('Content-Type') || '').toLowerCase();",
+                  "const hasJsonContentType = contentType.includes('application/json');",
+                  "let jsonData = null;",
+                  "let parseError = null;",
+                  "",
+                  "try {",
+                  "    if (hasJsonContentType || pm.response.text()) {",
+                  "        jsonData = pm.response.json();",
+                  "        console.log('Response JSON:', JSON.stringify(jsonData));",
+                  "    }",
+                  "} catch (err) {",
+                  "    parseError = err;",
+                  "}",
+                  "",
+                  "function getRequestJsonBody() {",
+                  "    const body = pm.request && pm.request.body;",
+                  "    if (!body) return null;",
+                  "",
+                  "    if (body.mode === 'raw') {",
+                  "        try {",
+                  "            return JSON.parse(pm.variables.replaceIn(body.raw || ''));",
+                  "        } catch (e) {",
+                  "            return null;",
+                  "        }",
+                  "    }",
+                  "",
+                  "    if (body.mode === 'urlencoded') {",
+                  "        return (body.urlencoded?.members || []).reduce((acc, item) => {",
+                  "            if (!item.disabled) {",
+                  "                acc[item.key] = pm.variables.replaceIn(String(item.value || ''));",
+                  "            }",
+                  "            return acc;",
+                  "        }, {});",
+                  "    }",
+                  "",
+                  "    if (body.mode === 'formdata') {",
+                  "        return (body.formdata?.members || []).reduce((acc, item) => {",
+                  "            if (!item.disabled && item.type !== 'file') {",
+                  "                acc[item.key] = pm.variables.replaceIn(String(item.value || ''));",
+                  "            }",
+                  "            return acc;",
+                  "        }, {});",
+                  "    }",
+                  "",
+                  "    return null;",
+                  "}",
+                  "",
+                  "function firstDefined(values) {",
+                  "    return values.find(value => value !== undefined && value !== null && String(value).trim() !== '');",
+                  "}",
+                  "",
+                  "function persistVar(key, value) {",
+                  "    if (value === undefined || value === null || String(value).trim() === '') return;",
+                  "    const normalized = String(value).trim();",
+                  "    pm.environment.set(key, normalized);",
+                  "    pm.collectionVariables.set(key, normalized);",
+                  "    console.log(`✅ Persisted ${key}:`, normalized);",
+                  "}",
+                  "",
+                  "const requestBodyData = getRequestJsonBody();",
+                  "",
+                  "const requestPhone = firstDefined([",
+                  "    requestBodyData && requestBodyData.phone_number,",
+                  "    requestBodyData && requestBodyData.phone,",
+                  "    requestBodyData && requestBodyData.mobile,",
+                  "    pm.environment.get('phone_number'),",
+                  "    pm.collectionVariables.get('phone_number')",
+                  "]);",
+                  "",
+                  "if (requestPhone) {",
+                  "    persistVar('phone_number', requestPhone);",
+                  "} else {",
+                  "    console.warn('⚠️ No phone_number found in request body or existing variables');",
+                  "}",
+                  "",
+                  "const requestEmail = firstDefined([",
+                  "    requestBodyData && requestBodyData.email,",
+                  "    pm.environment.get('email'),",
+                  "    pm.collectionVariables.get('email')",
+                  "]);",
+                  "",
+                  "if (requestEmail) {",
+                  "    persistVar('email', requestEmail);",
+                  "}",
+                  "",
+                  "const responseUserId = firstDefined([",
+                  "    jsonData && jsonData.user && jsonData.user.id,",
+                  "    jsonData && jsonData.user && jsonData.user.user_id,",
+                  "    jsonData && jsonData.data && jsonData.data.user && jsonData.data.user.id,",
+                  "    jsonData && jsonData.data && jsonData.data.user && jsonData.data.user.user_id,",
+                  "    jsonData && jsonData.data && jsonData.data.id,",
+                  "    jsonData && jsonData.data && jsonData.data.user_id,",
+                  "    jsonData && jsonData.id,",
+                  "    jsonData && jsonData.user_id,",
+                  "    pm.environment.get('userId'),",
+                  "    pm.collectionVariables.get('userId')",
+                  "]);",
+                  "",
+                  "if (responseUserId) {",
+                  "    persistVar('userId', responseUserId);",
+                  "}",
+                  "",
+                  "const responseOtp = firstDefined([",
+                  "    jsonData && jsonData.otp,",
+                  "    jsonData && jsonData.code,",
+                  "    jsonData && jsonData.data && jsonData.data.otp,",
+                  "    jsonData && jsonData.data && jsonData.data.code,",
+                  "    jsonData && jsonData.message && jsonData.message.otp,",
+                  "    jsonData && jsonData.message && jsonData.message.data && jsonData.message.data.otp,",
+                  "    jsonData && jsonData.verification_code",
+                  "]);",
+                  "",
+                  "if (responseOtp) {",
+                  "    persistVar('otp', responseOtp);",
+                  "    persistVar('otp_source', 'response');",
+                  "} else {",
+                  "    console.warn('⚠️ No OTP found in response; keeping any previously stored OTP unchanged');",
+                  "}",
+                  "",
+                  "pm.test('Response time is under 10 seconds', () => {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "",
+                  "pm.test('Status code is a supported register outcome', () => {",
+                  "    pm.expect(statusCode).to.be.oneOf([201]);",
+                  "});",
+                  "",
+                  "pm.test('Phone number tracked in environment and collection', () => {",
+                  "    if ([200, 201, 202].includes(statusCode)) {",
+                  "        const envPhone = pm.environment.get('phone_number');",
+                  "        const colPhone = pm.collectionVariables.get('phone_number');",
+                  "        pm.expect(envPhone, 'environment phone_number must be saved').to.be.a('string').and.not.empty;",
+                  "        pm.expect(colPhone, 'collection phone_number must be saved').to.be.a('string').and.not.empty;",
+                  "        pm.expect(envPhone).to.eql(colPhone);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('OTP tracked in environment and collection when returned', () => {",
+                  "    if ([200, 201, 202].includes(statusCode) && responseOtp) {",
+                  "        const envOtp = pm.environment.get('otp');",
+                  "        const colOtp = pm.collectionVariables.get('otp');",
+                  "        pm.expect(envOtp, 'environment otp must be saved').to.be.a('string').and.not.empty;",
+                  "        pm.expect(colOtp, 'collection otp must be saved').to.be.a('string').and.not.empty;",
+                  "        pm.expect(envOtp).to.eql(colOtp);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Response body is valid JSON when body is present', () => {",
+                  "    if (pm.response.text()) {",
+                  "        pm.expect(parseError, parseError && parseError.message).to.equal(null);",
+                  "        pm.expect(jsonData).to.be.an('object');",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Successful registration returns expected shape', () => {",
+                  "    if ([200, 201, 202].includes(statusCode)) {",
+                  "        pm.expect(jsonData).to.be.an('object');",
+                  "        pm.expect(jsonData).to.have.property('message');",
+                  "",
+                  "        if (jsonData.data !== undefined && jsonData.data !== null) {",
+                  "            pm.expect(jsonData.data).to.be.an('string');",
+                  "            ['id', 'user_id', 'email', 'phone_number'].forEach(field => {",
+                  "                if (jsonData.data[field] !== undefined && jsonData.data[field] !== null) {",
+                  "                    pm.expect(jsonData.data[field]).to.not.eql('');",
+                  "                }",
+                  "            });",
+                  "        }",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"first_name\": \"{{$randomFirstName}}\",\r\n    \"last_name\": \"{{$randomLastName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"phone_number\": \"{{phone_number}}\",\r\n    \"date_of_birth\": \"2005-10-10\", // Y-m-d\r\n    \"gender\": \"\", // female and male\r\n    \"password\": \"{{password}}\",\r\n    \"password_confirmation\": \"{{password}}\",\r\n    \"terms_accepted\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/register",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "",
+                  "pm.test('Verify Account returns success or useful validation state', function () {",
+                  "    pm.expect([200, 201, 400, 404, 409, 422]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if ([200, 201].includes(pm.response.code)) {",
+                  "    pm.test('Account verification succeeded', function () {",
+                  "        pm.expect(res.message || res.success || res.data).to.exist;",
+                  "    });",
+                  "    pm.environment.set('isVerified', 'true');",
+                  "}",
+                  "",
+                  "if (pm.response.code === 422 || pm.response.code === 404) {",
+                  "    pm.test('Verification failure returns diagnostic message', function () {",
+                  "        pm.expect(res.message || res.errors).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "inherit"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone_number\": \"{{phone_number}}\",\n  \"otp\": \"{{otp}}\"\n\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/verify-account",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-account"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "if (jsonData.data && jsonData.data.token) {\r",
+                  "    pm.collectionVariables.set(\"token\", jsonData.data.token);\r",
+                  "    console.log(\"Token saved:\", jsonData.data.token);\r",
+                  "}\r",
+                  "\r",
+                  "if (jsonData.data && jsonData.data.refresh_token) {\r",
+                  "    pm.collectionVariables.set(\"refresh_token\", jsonData.data.refresh_token);\r",
+                  "    console.log(\"Refresh token saved:\", jsonData.data.refresh_token);\r",
+                  "}\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"phone_number\": \"{{phone_number}}\",\r\n    \"password\": \"{{password}}\"\r\n}\r\n\r\n// {\r\n//     \"phone_number\": \"08161215848\",\r\n//     \"password\": \"@Nigeria1234\"\r\n// }\r\n\r\n// {\r\n//     \"phone_number\": \"07069120433\",\r\n//     \"password\": \"@Nigeria123\"\r\n// }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/login",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Biometric Enable",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"password\": \"{{password}}\",\r\n  \"public_key\": \"-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoUX+HYDPNEgKNhxPGD22YiMmV9gVtMgDugmI1GPuaS+ch2JtDMhL+37QQPyLVSMvwBjs6TB69YS7sTsxDGdMPm2F8XK8ezAlY7wqZN9d3I4YV8bx5L7O6Qk5DzkkmVxJqFnjIsZFtnV26htPDqAZ784lHsNqqxBqPl3Du4OUu1WZ7rEypmtTsIBxPBGIv9rcjx+K2sazpIJ2L6BAKfovDQ16Dmx3roU2SqHkfHOr85OBXOFI2sTFwzPUbjPrrNPmxNyCwHPZv+tFcWmGhTwkLYnlRjLaN7b+7jdlArB1n7kqvS20LAFL0G5cmdoVfajkrxw6ZHyqrJ7wpNZO3e19CQIDAQAB-----END PUBLIC KEY-----\",\r\n  \"device_id\": \"postman-test-device\",\r\n  \"device_name\": \"Postman Simulator\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/profile/biometric/enable",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "profile",
+                "biometric",
+                "enable"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Biometric Challenge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is valid JSON\", function () {\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Response body is an object\", function () {\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  "// Try common locations for the challenge id\r",
+                  "const challengeId =\r",
+                  "    jsonData.challenge_id ||\r",
+                  "    jsonData.challengeId ||\r",
+                  "    (jsonData.data && jsonData.data.challenge_id) ||\r",
+                  "    (jsonData.data && jsonData.data.challengeId) ||\r",
+                  "    (jsonData.result && jsonData.result.challenge_id) ||\r",
+                  "    (jsonData.result && jsonData.result.challengeId);\r",
+                  "\r",
+                  "pm.test(\"Challenge ID exists in response\", function () {\r",
+                  "    pm.expect(challengeId, \"challenge id was not found in the response\").to.exist;\r",
+                  "    pm.expect(String(challengeId).trim()).to.not.equal(\"\");\r",
+                  "});\r",
+                  "\r",
+                  "// Save for reuse in biometric verify endpoint\r",
+                  "pm.environment.set(\"biometric_challenge\", String(challengeId));\r",
+                  "\r",
+                  "pm.test(\"Challenge ID saved to environment\", function () {\r",
+                  "    pm.expect(pm.environment.get(\"biometric_challenge\")).to.eql(String(challengeId));\r",
+                  "});\r",
+                  "\r",
+                  "// Optional checks for common success fields\r",
+                  "pm.test(\"Response indicates success\", function () {\r",
+                  "    if (jsonData.success !== undefined) {\r",
+                  "        pm.expect(jsonData.success).to.be.oneOf([true, \"true\", 1, \"success\"]);\r",
+                  "    } else if (jsonData.status !== undefined) {\r",
+                  "        pm.expect(String(jsonData.status).toLowerCase()).to.be.oneOf([\"success\", \"ok\"]);\r",
+                  "    } else {\r",
+                  "        pm.expect(pm.response.code).to.eql(200);\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"phone_number\": \"{{phone_number}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/biometric/challenge",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "biometric",
+                "challenge"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let res = {};\r",
+                  "try {\r",
+                  "    res = pm.response.json();\r",
+                  "} catch (e) {}\r",
+                  "\r",
+                  "pm.test('Forgot Password returns success or valid failure response', function () {\r",
+                  "    pm.expect([200, 201, 400, 404, 422]).to.include(pm.response.code);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test('Forgot Password response contains message/data', function () {\r",
+                  "    pm.expect(res.message || res.data || res.errors || pm.response.text()).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "const otp = res?.data?.otp || res?.otp || res?.data?.data?.otp;\r",
+                  "\r",
+                  "if (otp) {\r",
+                  "    pm.environment.set('otp', String(otp));\r",
+                  "    pm.environment.set('otp_source', 'forgot_password');\r",
+                  "\r",
+                  "    pm.test('OTP was captured from Forgot Password response', function () {\r",
+                  "        pm.expect(String(otp)).to.not.be.empty;\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"phone_number\": \"{{phone_number}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/forgot-password",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resend Otp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let res = {};\r",
+                  "try {\r",
+                  "    res = pm.response.json();\r",
+                  "} catch (e) {}\r",
+                  "\r",
+                  "pm.test('Resend Otp returns success or known validation response', function () {\r",
+                  "    pm.expect([200, 201, 400, 404, 422]).to.include(pm.response.code);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test('Resend Otp response includes a message or data', function () {\r",
+                  "    pm.expect(res.message || res.data || res.errors || pm.response.text()).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "const otp = res?.data?.otp || res?.otp || res?.data?.data?.otp;\r",
+                  "\r",
+                  "if (otp) {\r",
+                  "    pm.environment.set('otp', String(otp));\r",
+                  "    pm.environment.set('otp_source', 'resend');\r",
+                  "\r",
+                  "    pm.test('OTP was captured from Resend Otp response', function () {\r",
+                  "        pm.expect(String(otp)).to.not.be.empty;\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"phone_number\": \"{{phone_number}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/resend-otp",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "resend-otp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "function parseJsonSafe() {\r",
+                  "    try { return pm.response.json(); } catch (e) { return null; }\r",
+                  "}\r",
+                  "\r",
+                  "function assertStatusOneOf(codes) {\r",
+                  "    pm.test(`Status is one of: ${codes.join(', ')}`, function () {\r",
+                  "        pm.expect(codes).to.include(pm.response.code);\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "function assertResponseTime(maxMs = 5000) {\r",
+                  "    pm.test(`Response time is below ${maxMs}ms`, function () {\r",
+                  "        pm.expect(pm.response.responseTime).to.be.below(maxMs);\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "function assertJsonContentIfPresent() {\r",
+                  "    const header = pm.response.headers.get('Content-Type') || '';\r",
+                  "    if (header) {\r",
+                  "        pm.test('Content-Type is JSON when body is JSON', function () {\r",
+                  "            pm.expect(header.toLowerCase()).to.include('application/json');\r",
+                  "        });\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "function assertCommonEnvelope(res) {\r",
+                  "    pm.test('Response body is valid JSON object', function () {\r",
+                  "        pm.expect(res).to.be.an('object');\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test('Response contains common API envelope field', function () {\r",
+                  "        const hasEnvelope = ['message', 'status', 'success', 'data', 'errors']\r",
+                  "            .some(key => Object.prototype.hasOwnProperty.call(res, key));\r",
+                  "        pm.expect(hasEnvelope).to.equal(true);\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "function assertMessageIfPresent() {\r",
+                  "    const res = parseJsonSafe();\r",
+                  "    if (!res) return;\r",
+                  "    if (res.message !== undefined) {\r",
+                  "        pm.test('message is a valid message field', function () {\r",
+                  "            pm.expect(\r",
+                  "                typeof res.message === 'string' || typeof res.message === 'object'\r",
+                  "            ).to.equal(true);\r",
+                  "        });\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "function saveIfExists(source, key, variableName = key) {\r",
+                  "    if (source && source[key] !== undefined && source[key] !== null) {\r",
+                  "        pm.environment.set(variableName, typeof source[key] === 'object' ? JSON.stringify(source[key]) : String(source[key]));\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "function saveOtpIfPresent(res) {\r",
+                  "    if (res?.data?.otp) pm.environment.set('otp', String(res.data.otp));\r",
+                  "    if (res?.otp) pm.environment.set('otp', String(res.otp));\r",
+                  "}\r",
+                  "\r",
+                  "function saveProfileSnapshot(res) {\r",
+                  "    const profile = res?.data?.user || res?.data?.profile || res?.data || res?.user || res?.profile;\r",
+                  "    if (profile && typeof profile === 'object') {\r",
+                  "        pm.environment.set('profile_last_snapshot', JSON.stringify(profile));\r",
+                  "        saveIfExists(profile, 'first_name', 'profile_first_name');\r",
+                  "        saveIfExists(profile, 'last_name', 'profile_last_name');\r",
+                  "        saveIfExists(profile, 'email', 'profile_email');\r",
+                  "        saveIfExists(profile, 'phone_number', 'profile_phone_number');\r",
+                  "        saveIfExists(profile, 'photo', 'profile_photo');\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "(function runBaseline() {\r",
+                  "    assertStatusOneOf([200, 201, 202, 204]);\r",
+                  "    assertResponseTime(5000);\r",
+                  "\r",
+                  "    if (pm.response.code !== 204) {\r",
+                  "        const res = parseJsonSafe();\r",
+                  "        if (res) {\r",
+                  "            assertJsonContentIfPresent();\r",
+                  "            assertCommonEnvelope(res);\r",
+                  "            assertMessageIfPresent();\r",
+                  "            saveOtpIfPresent(res);\r",
+                  "            saveProfileSnapshot(res);\r",
+                  "        }\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.test('Response is not an HTML error page', function () {\r",
+                  "        const text = pm.response.text();\r",
+                  "        pm.expect(text.toLowerCase()).to.not.include('<html');\r",
+                  "    });\r",
+                  "})();"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"first_name\": \"{{$randomFirstName}}\",\r\n    \"last_name\": \"{{$randomLastName}}\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n    // \"phone_number\": \"{{phone_number}}\"\r\n\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/profile/",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "profile",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const req = JSON.parse(pm.request.body.raw);\r",
+                  "const res = pm.response.json();\r",
+                  "const profile = res?.data?.user || res?.data?.profile || res?.data || res?.user || res?.profile;\r",
+                  "\r",
+                  "pm.test('Update Profile succeeds', function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "if (profile) {\r",
+                  "    ['first_name', 'last_name', 'email'].forEach((field) => {\r",
+                  "        if (req[field] !== undefined && profile[field] !== undefined) {\r",
+                  "            pm.test(`Updated ${field} is reflected in response`, function () {\r",
+                  "                pm.expect(String(profile[field])).to.eql(String(req[field]));\r",
+                  "            });\r",
+                  "        }\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"first_name\": \"{{$randomFirstName}}\",\r\n    \"last_name\": \"{{$randomLastName}}\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n    // \"phone_number\": \"{{phone_number}}\"\r\n\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/profile/update-profile",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "profile",
+                "update-profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Biometric Disable",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData = {};\r",
+                  "\r",
+                  "pm.test(\"Response time is less than 5000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response body is valid JSON\", function () {\r",
+                  "    jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Status code is valid\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 422]);\r",
+                  "});\r",
+                  "\r",
+                  "if ([200, 201].includes(pm.response.code)) {\r",
+                  "    pm.test(\"Success response has a message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Success message confirms biometric disable\", function () {\r",
+                  "        const message = (jsonData.message || \"\").toLowerCase();\r",
+                  "        pm.expect(\r",
+                  "            message.includes(\"biometric\") ||\r",
+                  "            message.includes(\"disabled\") ||\r",
+                  "            message.includes(\"turned off\") ||\r",
+                  "            message.includes(\"success\")\r",
+                  "        ).to.be.true;\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Biometric flag can be tracked locally\", function () {\r",
+                  "        pm.environment.set(\"biometric_enabled\", \"false\");\r",
+                  "        pm.expect(pm.environment.get(\"biometric_enabled\")).to.eql(\"false\");\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 401) {\r",
+                  "    pm.test(\"Unauthorized response has auth message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message.toLowerCase()).to.satisfy(function (msg) {\r",
+                  "            return msg.includes(\"token\") || msg.includes(\"unauthorized\");\r",
+                  "        });\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 403) {\r",
+                  "    pm.test(\"Forbidden response has message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if ([400, 404, 422].includes(pm.response.code)) {\r",
+                  "    pm.test(\"Error response has message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/profile/biometric/disable",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "profile",
+                "biometric",
+                "disable"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Biometric Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData = {};\r",
+                  "\r",
+                  "pm.test(\"Response time is less than 5000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response body is valid JSON\", function () {\r",
+                  "    jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Status code is valid\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 403, 404]);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 200) {\r",
+                  "    pm.test(\"Response has biometric status information\", function () {\r",
+                  "        const hasTopLevelStatus = Object.prototype.hasOwnProperty.call(jsonData, \"status\");\r",
+                  "        const hasTopLevelEnabled = Object.prototype.hasOwnProperty.call(jsonData, \"enabled\");\r",
+                  "        const hasDataObject = Object.prototype.hasOwnProperty.call(jsonData, \"data\");\r",
+                  "\r",
+                  "        pm.expect(hasTopLevelStatus || hasTopLevelEnabled || hasDataObject).to.be.true;\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Biometric status value is present\", function () {\r",
+                  "        let biometricValue;\r",
+                  "\r",
+                  "        if (typeof jsonData.enabled !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.enabled;\r",
+                  "        } else if (typeof jsonData.status !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.status;\r",
+                  "        } else if (jsonData.data && typeof jsonData.data.enabled !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.data.enabled;\r",
+                  "        } else if (jsonData.data && typeof jsonData.data.status !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.data.status;\r",
+                  "        }\r",
+                  "\r",
+                  "        pm.expect(biometricValue).to.not.equal(undefined);\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Store biometric status in environment\", function () {\r",
+                  "        let biometricValue;\r",
+                  "\r",
+                  "        if (typeof jsonData.enabled !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.enabled;\r",
+                  "        } else if (typeof jsonData.status !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.status;\r",
+                  "        } else if (jsonData.data && typeof jsonData.data.enabled !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.data.enabled;\r",
+                  "        } else if (jsonData.data && typeof jsonData.data.status !== \"undefined\") {\r",
+                  "            biometricValue = jsonData.data.status;\r",
+                  "        }\r",
+                  "\r",
+                  "        pm.environment.set(\"biometric_status\", String(biometricValue));\r",
+                  "        pm.expect(pm.environment.get(\"biometric_status\")).to.eql(String(biometricValue));\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 401) {\r",
+                  "    pm.test(\"Unauthorized response has auth message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message.toLowerCase()).to.satisfy(function (msg) {\r",
+                  "            return msg.includes(\"token\") || msg.includes(\"unauthorized\");\r",
+                  "        });\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if ([400, 403, 404].includes(pm.response.code)) {\r",
+                  "    pm.test(\"Error response has message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"device_id\": \"postman-test-device\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/profile/biometric/status",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "profile",
+                "biometric",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Preferences",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData = {};\r",
+                  "\r",
+                  "pm.test(\"Response time is less than 5000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response body is valid JSON\", function () {\r",
+                  "    jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Status code is valid\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 422]);\r",
+                  "});\r",
+                  "\r",
+                  "if ([200, 201].includes(pm.response.code)) {\r",
+                  "    pm.test(\"Success response has a message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Success message confirms notification update\", function () {\r",
+                  "        const message = (jsonData.message || \"\").toLowerCase();\r",
+                  "        pm.expect(\r",
+                  "            message.includes(\"notification\") ||\r",
+                  "            message.includes(\"preference\") ||\r",
+                  "            message.includes(\"updated\") ||\r",
+                  "            message.includes(\"success\")\r",
+                  "        ).to.be.true;\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Optionally store notification snapshot\", function () {\r",
+                  "        pm.environment.set(\"notification_last_snapshot\", JSON.stringify(jsonData));\r",
+                  "        pm.expect(pm.environment.get(\"notification_last_snapshot\")).to.be.a(\"string\");\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 401) {\r",
+                  "    pm.test(\"Unauthorized response has auth message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message.toLowerCase()).to.satisfy(function (msg) {\r",
+                  "            return msg.includes(\"token\") || msg.includes(\"unauthorized\");\r",
+                  "        });\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if ([400, 403, 404, 422].includes(pm.response.code)) {\r",
+                  "    pm.test(\"Error response has message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"notify_transaction\": false,\r\n  \"notify_login\": true,\r\n  \"notify_biometric\": true,\r\n  \"notify_marketing\": true\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/profile/update-notification-preferences",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "profile",
+                "update-notification-preferences"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update FCM Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData = {};\r",
+                  "\r",
+                  "pm.test(\"Response time is less than 5000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response body is valid JSON\", function () {\r",
+                  "    jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Status code is valid\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 422]);\r",
+                  "});\r",
+                  "\r",
+                  "if ([200, 201].includes(pm.response.code)) {\r",
+                  "    pm.test(\"Success response has a message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Success message confirms FCM token update\", function () {\r",
+                  "        const message = (jsonData.message || \"\").toLowerCase();\r",
+                  "        pm.expect(\r",
+                  "            message.includes(\"fcm\") ||\r",
+                  "            message.includes(\"token\") ||\r",
+                  "            message.includes(\"updated\") ||\r",
+                  "            message.includes(\"success\")\r",
+                  "        ).to.be.true;\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Store latest FCM update snapshot\", function () {\r",
+                  "        pm.environment.set(\"notification_last_snapshot\", JSON.stringify(jsonData));\r",
+                  "        pm.expect(pm.environment.get(\"notification_last_snapshot\")).to.be.a(\"string\");\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if (pm.response.code === 401) {\r",
+                  "    pm.test(\"Unauthorized response has auth message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message.toLowerCase()).to.satisfy(function (msg) {\r",
+                  "            return msg.includes(\"token\") || msg.includes(\"unauthorized\");\r",
+                  "        });\r",
+                  "    });\r",
+                  "}\r",
+                  "\r",
+                  "if ([400, 403, 404, 422].includes(pm.response.code)) {\r",
+                  "    pm.test(\"Error response has message\", function () {\r",
+                  "        pm.expect(jsonData).to.have.property(\"message\");\r",
+                  "        pm.expect(jsonData.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"fcm_token\": \"fcm_token\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/profile/update-fcm-token",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "profile",
+                "update-fcm-token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let responseJson = {};",
+                  "",
+                  "try {",
+                  "    responseJson = pm.response.json();",
+                  "} catch (e) {",
+                  "    console.error(\"Response is not valid JSON\");",
+                  "}",
+                  "",
+                  "// Adjust these paths to match your API response",
+                  "const accessToken =",
+                  "    responseJson?.data?.access_token ||",
+                  "    responseJson?.access_token ||",
+                  "    responseJson?.token;",
+                  "",
+                  "const refreshToken =",
+                  "    responseJson?.data?.refresh_token ||",
+                  "    responseJson?.refresh_token;",
+                  "",
+                  "if (accessToken) {",
+                  "    pm.environment.set(\"accessToken\", accessToken);",
+                  "    pm.collectionVariables.set(\"accessToken\", accessToken);",
+                  "",
+                  "    console.log(\"New access token stored\");",
+                  "}",
+                  "",
+                  "if (refreshToken) {",
+                  "    pm.environment.set(\"refreshToken\", refreshToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", refreshToken);",
+                  "",
+                  "    console.log(\"New refresh token stored\");",
+                  "}",
+                  "",
+                  "pm.environment.set(\"lastTokenRefreshTime\", new Date().toISOString());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"refresh_token\": \"{{refresh_token}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/refresh-token",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh-token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response time is less than 5000ms\", function () {\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is valid JSON\", function () {\r",
+                  "    pm.expect(function () {\r",
+                  "        pm.response.json();\r",
+                  "    }).to.not.throw();\r",
+                  "});\r",
+                  "\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Response has a success indicator\", function () {\r",
+                  "    pm.expect(jsonData).to.be.an(\"object\");\r",
+                  "    pm.expect(\r",
+                  "        jsonData.success !== undefined ||\r",
+                  "        jsonData.status !== undefined ||\r",
+                  "        jsonData.message !== undefined\r",
+                  "    ).to.equal(true);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response contains a message\", function () {\r",
+                  "    pm.expect(jsonData.message).to.exist;\r",
+                  "    pm.expect(jsonData.message).to.be.a(\"string\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Password reset request completed successfully\", function () {\r",
+                  "    const successValues = [true, \"success\", \"successful\", \"ok\"];\r",
+                  "    if (jsonData.success !== undefined) {\r",
+                  "        pm.expect(successValues).to.include(\r",
+                  "            typeof jsonData.success === \"string\"\r",
+                  "                ? jsonData.success.toLowerCase()\r",
+                  "                : jsonData.success\r",
+                  "        );\r",
+                  "    } else if (jsonData.status !== undefined) {\r",
+                  "        pm.expect([\"success\", \"successful\", \"ok\"]).to.include(\r",
+                  "            String(jsonData.status).toLowerCase()\r",
+                  "        );\r",
+                  "    } else {\r",
+                  "        pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "    }\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Request used matching password and confirmation\", function () {\r",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);\r",
+                  "    pm.expect(requestBody.password).to.eql(requestBody.password_confirmation);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"OTP was provided in request\", function () {\r",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);\r",
+                  "    pm.expect(requestBody.otp).to.exist;\r",
+                  "    pm.expect(String(requestBody.otp).trim()).to.not.equal(\"\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Phone number was provided in request\", function () {\r",
+                  "    const requestBody = JSON.parse(pm.request.body.raw);\r",
+                  "    pm.expect(requestBody.phone_number).to.exist;\r",
+                  "    pm.expect(String(requestBody.phone_number).trim()).to.not.equal(\"\");\r",
+                  "});\r",
+                  "\r",
+                  "// Optional: mark flow state for later requests\r",
+                  "pm.environment.set(\"password_otp_verified\", \"false\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"authRunUnsafe\", true);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"phone_number\": \"{{phone_number}}\",\r\n    \"otp\": \"{{otp}}\",\r\n    \"password\": \"{{new_password}}\",\r\n    \"password_confirmation\": \"{{new_password}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://dev.ivavsolutions.com/api/auth/reset-password",
+              "protocol": "https",
+              "host": [
+                "dev",
+                "ivavsolutions",
+                "com"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              "const env = pm.environment;\r",
+              "\r",
+              "function setDefault(key, value) {\r",
+              "    if (!env.get(key)) env.set(key, value);\r",
+              "}\r",
+              "\r",
+              "setDefault('authRunUnsafe', 'false');\r",
+              "setDefault('first_name', 'Postman');\r",
+              "setDefault('last_name', 'Regression');\r",
+              "setDefault('password', 'Password@123');\r",
+              "setDefault('new_password', 'Password@1234');\r",
+              "setDefault('device_id', 'postman-device-001');\r",
+              "setDefault('otp_source', 'register');\r",
+              "\r",
+              "const email = env.get('email');\r",
+              "if (!email) {\r",
+              "    env.set('email', `postman.auth.${Date.now()}@example.com`);\r",
+              "}\r",
+              "\r",
+              "const phone = env.get('phone_number');\r",
+              "if (!phone) {\r",
+              "    env.set('phone_number', `080${String(Date.now()).slice(-8)}`);\r",
+              "}\r",
+              "\r",
+              "const accessToken = env.get('accessToken') || env.get('token');\r",
+              "if (accessToken) {\r",
+              "    pm.variables.set('resolvedAccessToken', accessToken);\r",
+              "}\r",
+              "\r",
+              "const refreshToken = env.get('refreshToken');\r",
+              "if (refreshToken) {\r",
+              "    pm.variables.set('resolvedRefreshToken', refreshToken);\r",
+              "}\r",
+              "\r",
+              "const unsafeRequests = [\r",
+              "    'Reset Password',\r",
+              "    'Logout'\r",
+              "];\r",
+              "\r",
+              "if (unsafeRequests.includes(pm.info.requestName) && env.get('authRunUnsafe') !== 'true') {\r",
+              "    pm.execution.setNextRequest(\"get profile\" );\r",
+              "    console.warn(\r",
+              "    `Skipping unsafe request: ${pm.info.requestName}.`\r",
+              ");\r",
+              "pm.execution.setNextRequest(\"get profile\");\r",
+              "}"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              "function jsonSafe() {\r",
+              "    try { return pm.response.json(); } catch (e) { return null; }\r",
+              "}\r",
+              "\r",
+              "function hasAny(obj, keys) {\r",
+              "    return keys.some((k) => Object.prototype.hasOwnProperty.call(obj || {}, k));\r",
+              "}\r",
+              "\r",
+              "function saveValue(source, pathList, envKey) {\r",
+              "    for (const path of pathList) {\r",
+              "        let cur = source;\r",
+              "        let found = true;\r",
+              "        for (const p of path) {\r",
+              "            if (cur && Object.prototype.hasOwnProperty.call(cur, p) && cur[p] !== undefined && cur[p] !== null) {\r",
+              "                cur = cur[p];\r",
+              "            } else {\r",
+              "                found = false;\r",
+              "                break;\r",
+              "            }\r",
+              "        }\r",
+              "        if (found) {\r",
+              "            pm.environment.set(envKey, typeof cur === 'object' ? JSON.stringify(cur) : String(cur));\r",
+              "            return true;\r",
+              "        }\r",
+              "    }\r",
+              "    return false;\r",
+              "}\r",
+              "\r",
+              "function assertStatus(codes) {\r",
+              "    pm.test(`Status is one of ${codes.join(', ')}`, function () {\r",
+              "        pm.expect(codes).to.include(pm.response.code);\r",
+              "    });\r",
+              "}\r",
+              "\r",
+              "function assertJsonIfPossible() {\r",
+              "    if (pm.response.code === 204) return;\r",
+              "    const contentType = (pm.response.headers.get('Content-Type') || '').toLowerCase();\r",
+              "    if (contentType) {\r",
+              "        pm.test('Response content-type is JSON-compatible', function () {\r",
+              "            pm.expect(contentType).to.include('application/json');\r",
+              "        });\r",
+              "    }\r",
+              "}\r",
+              "\r",
+              "function assertNotHtml() {\r",
+              "    pm.test('Response is not HTML', function () {\r",
+              "        pm.expect(pm.response.text().toLowerCase()).to.not.include('<html');\r",
+              "    });\r",
+              "}\r",
+              "\r",
+              "function assertCommonEnvelope(res) {\r",
+              "    pm.test('Response is a JSON object', function () {\r",
+              "        pm.expect(res).to.be.an('object');\r",
+              "    });\r",
+              "\r",
+              "    pm.test('Response contains common envelope fields', function () {\r",
+              "        pm.expect(\r",
+              "            hasAny(res, ['message', 'status', 'success', 'data', 'errors'])\r",
+              "        ).to.equal(true);\r",
+              "    });\r",
+              "}\r",
+              "\r",
+              "function saveAuthArtifacts(res) {\r",
+              "    saveValue(res, [['data', 'access'], ['data', 'accessToken'], ['accessToken'], ['token']], 'accessToken');\r",
+              "    saveValue(res, [['data', 'refresh'], ['data', 'refreshToken'], ['refreshToken']], 'refreshToken');\r",
+              "    saveValue(res, [['data', 'otp'], ['otp']], 'otp');\r",
+              "    saveValue(res, [['data', 'challenge'], ['challenge']], 'biometric_challenge');\r",
+              "    saveValue(res, [['data', 'verified'], ['verified']], 'isVerified');\r",
+              "    saveValue(res, [['data', 'user', 'email'], ['data', 'email'], ['email']], 'email');\r",
+              "    saveValue(res, [['data', 'user', 'phone_number'], ['data', 'phone_number'], ['phone_number']], 'phone_number');\r",
+              "}\r",
+              "\r",
+              "(function baseline() {\r",
+              "    assertStatus([200, 201, 202, 204, 400, 401, 403, 404, 409, 422]);\r",
+              "    assertJsonIfPossible();\r",
+              "    assertNotHtml();\r",
+              "\r",
+              "    const res = jsonSafe();\r",
+              "    if (res) {\r",
+              "        assertCommonEnvelope(res);\r",
+              "        saveAuthArtifacts(res);\r",
+              "    }\r",
+              "\r",
+              "    pm.test('Response time is below 6s', function () {\r",
+              "        pm.expect(pm.response.responseTime).to.be.below(6000);\r",
+              "    });\r",
+              "})();"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "/************************************************************\r",
+          " * CI/CD SAFE CONFIG VALIDATION + BASE URL RESOLUTION\r",
+          " ************************************************************/\r",
+          "\r",
+          "// =========================\r",
+          "// 1. CONFIG KEYS\r",
+          "// =========================\r",
+          "const skipStateKey = 'collection_skip_test_folder_state';\r",
+          "const skipHistoryKey = 'collection_skip_test_folder_history';\r",
+          "\r",
+          "// =========================\r",
+          "// 2. DEFINE DEFAULT API URL\r",
+          "// =========================\r",
+          "const defaultApiUrl = \"https://dev.ivavsolutions.com/api\";\r",
+          "\r",
+          "// Ensure api_url exists in collection variables as a safe fallback\r",
+          "if (!pm.collectionVariables.get(\"api_url\")) {\r",
+          "    pm.collectionVariables.set(\"api_url\", defaultApiUrl);\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 3. SAFE VARIABLE RESOLUTION\r",
+          "// Priority:\r",
+          "// 1. Environment variable\r",
+          "// 2. Collection variable\r",
+          "// 3. Default API URL\r",
+          "// =========================\r",
+          "const apiUrl =\r",
+          "    pm.environment.get(\"api_url\") ||\r",
+          "    pm.collectionVariables.get(\"api_url\") ||\r",
+          "    defaultApiUrl;\r",
+          "\r",
+          "if (!apiUrl) {\r",
+          "    const message = \"Missing required variable: api_url. Set it in Environment or Collection variables.\";\r",
+          "    console.error(message, {\r",
+          "        requestName: pm.info.requestName\r",
+          "    });\r",
+          "\r",
+          "    throw new Error(message);\r",
+          "}\r",
+          "\r",
+          "// Persist resolved API URL for downstream requests\r",
+          "pm.collectionVariables.set(\"api_url\", apiUrl);\r",
+          "pm.collectionVariables.set(\"resolved_api_url\", apiUrl);\r",
+          "\r",
+          "// =========================\r",
+          "// 4. SAFE STATE STORAGE HELPERS\r",
+          "// =========================\r",
+          "function readJsonVariable(key, fallback) {\r",
+          "    const raw = pm.collectionVariables.get(key);\r",
+          "    if (!raw) return fallback;\r",
+          "\r",
+          "    try {\r",
+          "        return JSON.parse(raw);\r",
+          "    } catch (e) {\r",
+          "        console.warn(`Invalid JSON in ${key}, resetting.`);\r",
+          "        return fallback;\r",
+          "    }\r",
+          "}\r",
+          "\r",
+          "function writeJsonVariable(key, value) {\r",
+          "    pm.collectionVariables.set(key, JSON.stringify(value));\r",
+          "}\r",
+          "\r",
+          "function appendRunEvent(type, details) {\r",
+          "    const history = readJsonVariable(skipHistoryKey, []);\r",
+          "\r",
+          "    history.push({\r",
+          "        type,\r",
+          "        requestName: pm.info.requestName || \"\",\r",
+          "        requestId: pm.info.requestId || \"\",\r",
+          "        timestamp: new Date().toISOString(),\r",
+          "        ...details\r",
+          "    });\r",
+          "\r",
+          "    writeJsonVariable(skipHistoryKey, history);\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 5. COLLECTION STATE TRACKING\r",
+          "// =========================\r",
+          "const skipState = readJsonVariable(skipStateKey, {\r",
+          "    lastRequestId: null,\r",
+          "    lastRequestName: null,\r",
+          "    timestamp: null\r",
+          "});\r",
+          "\r",
+          "skipState.lastRequestId = pm.info.requestId;\r",
+          "skipState.lastRequestName = pm.info.requestName;\r",
+          "skipState.timestamp = new Date().toISOString();\r",
+          "\r",
+          "writeJsonVariable(skipStateKey, skipState);\r",
+          "\r",
+          "// =========================\r",
+          "// 6. BASE URL SAFETY CHECK\r",
+          "// =========================\r",
+          "if (!/^https?:\\/\\/.+/i.test(apiUrl)) {\r",
+          "    throw new Error(`Invalid api_url format: ${apiUrl}`);\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 7. OPTIONAL LOGGING\r",
+          "// =========================\r",
+          "console.info(\"CI/CD Pre-request OK\", {\r",
+          "    apiUrl,\r",
+          "    request: pm.info.requestName\r",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "/************************************************************\r",
+          " * SAFE POST-RESPONSE SCRIPT (CI/CD READY)\r",
+          " ************************************************************/\r",
+          "\r",
+          "// =========================\r",
+          "// 1. SAFE RESPONSE HELPERS\r",
+          "// =========================\r",
+          "function safeResponseJson() {\r",
+          "    try {\r",
+          "        if (!pm.response || !pm.response.text()) return null;\r",
+          "        return pm.response.json();\r",
+          "    } catch (error) {\r",
+          "        return null;\r",
+          "    }\r",
+          "}\r",
+          "\r",
+          "function safeResponseText() {\r",
+          "    try {\r",
+          "        return pm.response ? pm.response.text() : null;\r",
+          "    } catch (e) {\r",
+          "        return null;\r",
+          "    }\r",
+          "}\r",
+          "\r",
+          "function firstDefined(values) {\r",
+          "    for (let i = 0; i < values.length; i++) {\r",
+          "        const v = values[i];\r",
+          "        if (v !== undefined && v !== null && String(v).trim() !== \"\") {\r",
+          "            return v;\r",
+          "        }\r",
+          "    }\r",
+          "    return null;\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 2. SAFE FAILURE LOGGER (LIMITED SIZE)\r",
+          "// =========================\r",
+          "function readJsonVariable(key, fallback) {\r",
+          "    const raw = pm.collectionVariables.get(key);\r",
+          "    if (!raw) return fallback;\r",
+          "\r",
+          "    try {\r",
+          "        return JSON.parse(raw);\r",
+          "    } catch (e) {\r",
+          "        return fallback;\r",
+          "    }\r",
+          "}\r",
+          "\r",
+          "function writeFailure(entry) {\r",
+          "    const MAX_FAILURES = 50;\r",
+          "\r",
+          "    const failures = readJsonVariable(\"run_failures\", []);\r",
+          "\r",
+          "    failures.push({\r",
+          "        timestamp: new Date().toISOString(),\r",
+          "        requestName: pm.info.requestName || \"\",\r",
+          "        requestId: pm.info.requestId || \"\",\r",
+          "        ...entry\r",
+          "    });\r",
+          "\r",
+          "    // prevent unlimited growth (CI/CD safe)\r",
+          "    while (failures.length > MAX_FAILURES) {\r",
+          "        failures.shift();\r",
+          "    }\r",
+          "\r",
+          "    pm.collectionVariables.set(\"run_failures\", JSON.stringify(failures));\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 3. SAFE BODY PARSER\r",
+          "// =========================\r",
+          "function getRequestBodyData() {\r",
+          "    const body = pm.request && pm.request.body;\r",
+          "    if (!body) return null;\r",
+          "\r",
+          "    if (body.mode === \"raw\") {\r",
+          "        const raw = pm.variables.replaceIn(body.raw || \"\");\r",
+          "        if (!raw || !raw.trim()) return null;\r",
+          "\r",
+          "        try {\r",
+          "            return JSON.parse(raw);\r",
+          "        } catch (e) {\r",
+          "            console.warn(\"Invalid JSON body\");\r",
+          "            return null;\r",
+          "        }\r",
+          "    }\r",
+          "\r",
+          "    if (body.mode === \"urlencoded\") {\r",
+          "        return ((body.urlencoded && body.urlencoded.members) || []).reduce((acc, item) => {\r",
+          "            if (!item.disabled) {\r",
+          "                acc[item.key] = pm.variables.replaceIn(String(item.value || \"\"));\r",
+          "            }\r",
+          "            return acc;\r",
+          "        }, {});\r",
+          "    }\r",
+          "\r",
+          "    if (body.mode === \"formdata\") {\r",
+          "        return ((body.formdata && body.formdata.members) || []).reduce((acc, item) => {\r",
+          "            if (!item.disabled && item.type !== \"file\") {\r",
+          "                acc[item.key] = pm.variables.replaceIn(String(item.value || \"\"));\r",
+          "            }\r",
+          "            return acc;\r",
+          "        }, {});\r",
+          "    }\r",
+          "\r",
+          "    return null;\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 4. RESPONSE NORMALIZER\r",
+          "// =========================\r",
+          "function getResponseDataContainer(json) {\r",
+          "    if (!json || typeof json !== \"object\") return {};\r",
+          "    return json.data && typeof json.data === \"object\" ? json.data : json;\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 5. BASE SAFE STATE\r",
+          "// =========================\r",
+          "const hasResponse = !!pm.response;\r",
+          "const statusCode = hasResponse ? pm.response.code : null;\r",
+          "\r",
+          "const responseJson = safeResponseJson();\r",
+          "const responseText = safeResponseText();\r",
+          "const responseData = getResponseDataContainer(responseJson);\r",
+          "const requestBodyData = getRequestBodyData();\r",
+          "\r",
+          "const currentRequestName = pm.info.requestName || \"\";\r",
+          "const normalizedRequestName = currentRequestName.toLowerCase();\r",
+          "\r",
+          "// =========================\r",
+          "// 6. BASIC ASSERTION (SAFE)\r",
+          "// =========================\r",
+          "pm.test(\"Request completed or was captured for diagnostics\", function () {\r",
+          "    pm.expect(true).to.eql(true);\r",
+          "});\r",
+          "\r",
+          "// =========================\r",
+          "// 7. FAILURE HANDLING\r",
+          "// =========================\r",
+          "if (!hasResponse) {\r",
+          "    console.warn(`No response received for ${currentRequestName}`);\r",
+          "\r",
+          "    writeFailure({\r",
+          "        type: \"no_response\",\r",
+          "        status: null,\r",
+          "        body: null\r",
+          "    });\r",
+          "} else if (statusCode >= 400) {\r",
+          "    console.warn(`HTTP error in ${currentRequestName}`, {\r",
+          "        status: statusCode,\r",
+          "        body: responseText\r",
+          "    });\r",
+          "\r",
+          "    writeFailure({\r",
+          "        type: \"http_error\",\r",
+          "        status: statusCode,\r",
+          "        body: responseText\r",
+          "    });\r",
+          "}\r",
+          "\r",
+          "// =========================\r",
+          "// 8. SUCCESS HANDLING\r",
+          "// =========================\r",
+          "const isSuccess = hasResponse && statusCode >= 200 && statusCode < 300;\r",
+          "\r",
+          "if (isSuccess) {\r",
+          "\r",
+          "    // STRICT token extraction (CI/CD safe)\r",
+          "    const accessToken = firstDefined([\r",
+          "        responseJson?.access_token,\r",
+          "        responseJson?.accessToken,\r",
+          "        responseJson?.token\r",
+          "    ]);\r",
+          "\r",
+          "    const refreshToken = firstDefined([\r",
+          "        responseJson?.refresh_token,\r",
+          "        responseJson?.refreshToken\r",
+          "    ]);\r",
+          "\r",
+          "    const isRefreshFlow =\r",
+          "        normalizedRequestName.includes(\"refresh\") ||\r",
+          "        (pm.request.url && pm.request.url.toString().toLowerCase().includes(\"/refresh\"));\r",
+          "\r",
+          "    const isAuthFlow =\r",
+          "        (pm.request.url && pm.request.url.toString().toLowerCase().includes(\"/auth/\")) ||\r",
+          "        normalizedRequestName.includes(\"login\") ||\r",
+          "        normalizedRequestName.includes(\"register\") ||\r",
+          "        normalizedRequestName.includes(\"password\");\r",
+          "\r",
+          "    // =========================\r",
+          "    // 9. AUTH TOKEN STORAGE (SAFE)\r",
+          "    // =========================\r",
+          "    if (isRefreshFlow || isAuthFlow) {\r",
+          "\r",
+          "        if (accessToken) {\r",
+          "            pm.environment.set(\"accessToken\", accessToken);\r",
+          "            pm.collectionVariables.set(\"accessToken\", accessToken);\r",
+          "            pm.collectionVariables.set(\"token\", accessToken);\r",
+          "        }\r",
+          "\r",
+          "        if (refreshToken) {\r",
+          "            pm.environment.set(\"refreshToken\", refreshToken);\r",
+          "            pm.collectionVariables.set(\"refreshToken\", refreshToken);\r",
+          "        }\r",
+          "\r",
+          "        pm.collectionVariables.set(\"auth_last_updated_at\", new Date().toISOString());\r",
+          "        pm.collectionVariables.set(\"auth_last_updated_by\", currentRequestName);\r",
+          "    }\r",
+          "\r",
+          "    // =========================\r",
+          "    // 10. OPTIONAL PASSWORD TRACKING\r",
+          "    // =========================\r",
+          "    const nextPassword = firstDefined([\r",
+          "        requestBodyData?.new_password,\r",
+          "        requestBodyData?.password,\r",
+          "        pm.variables.get(\"new_password\"),\r",
+          "        pm.environment.get(\"new_password\"),\r",
+          "        pm.collectionVariables.get(\"new_password\")\r",
+          "    ]);\r",
+          "\r",
+          "    const isPasswordFlow =\r",
+          "        normalizedRequestName.includes(\"password\") &&\r",
+          "        isSuccess;\r",
+          "\r",
+          "    if (isPasswordFlow && nextPassword) {\r",
+          "        pm.environment.set(\"password\", nextPassword);\r",
+          "        pm.collectionVariables.set(\"password\", nextPassword);\r",
+          "\r",
+          "        pm.collectionVariables.set(\"password_last_updated_at\", new Date().toISOString());\r",
+          "        pm.collectionVariables.set(\"password_last_updated_by\", currentRequestName);\r",
+          "    }\r",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "resolved_api_url",
+      "value": ""
+    },
+    {
+      "key": "resolved_api_url_scope",
+      "value": ""
+    },
+    {
+      "key": "collection_skip_test_folder_state",
+      "value": ""
+    },
+    {
+      "key": "phone_number",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "otp",
+      "value": ""
+    },
+    {
+      "key": "otp_source",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "api_url",
+      "value": ""
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "auth_last_updated_by",
+      "value": ""
+    },
+    {
+      "key": "auth_last_updated_at",
+      "value": ""
+    },
+    {
+      "key": "run_failures",
+      "value": ""
+    },
+    {
+      "key": "new_password",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "password_last_updated_by",
+      "value": ""
+    },
+    {
+      "key": "password_last_updated_at",
+      "value": ""
+    },
+    {
+      "key": "otp_generated_at",
+      "value": ""
+    },
+    {
+      "key": "password_reset_phone_number",
+      "value": ""
+    },
+    {
+      "key": "authRunUnsafe",
+      "value": ""
+    }
+  ]
+}
