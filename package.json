@@ -1,0 +1,26 @@
+{
+  "name": "remita-test-automation",
+  "version": "1.0.0",
+  "description": "Playwright test automation framework for Remita (remita.net)",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:smoke": "playwright test tests/smoke",
+    "test:register": "playwright test tests/register",
+    "test:login": "playwright test tests/login",
+    "test:full-flow": "playwright test tests/full-flow",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen"
+  },
+  "keywords": ["playwright", "test-automation", "remita", "e2e"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "dotenv": "^17.4.2"
+  }
+}
